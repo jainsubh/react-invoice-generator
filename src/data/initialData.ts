@@ -9,7 +9,7 @@ export const initialProductLine: ProductLine = {
 export const initialInvoice: Invoice = {
   logo: '',
   logoWidth: 100,
-  title: 'INVOICE',
+  title: 'Create Challan',
   companyName: '',
   name: '',
   companyAddress: '',
@@ -31,12 +31,6 @@ export const initialInvoice: Invoice = {
   productLineQuantityRate: 'Rate',
   productLineQuantityAmount: 'Amount',
   productLines: [
-    {
-      description: 'Brochure Design',
-      quantity: '2',
-      rate: '100.00',
-    },
-    { ...initialProductLine },
     { ...initialProductLine },
   ],
   subTotalLabel: 'Sub Total',
