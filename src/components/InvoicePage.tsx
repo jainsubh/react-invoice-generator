@@ -5,7 +5,7 @@ import EditableInput from './EditableInput'
 import EditableSelect from './EditableSelect'
 import EditableTextarea from './EditableTextarea'
 import EditableCalendarInput from './EditableCalendarInput'
-import EditableFileImage from './EditableFileImage'
+//import EditableFileImage from './EditableFileImage'
 import countryList from '../data/countryList'
 import Document from './Document'
 import Page from './Page'
@@ -146,7 +146,7 @@ const InvoicePage: FC<Props> = ({ data, pdfMode, onChange }) => {
       <Page className="invoice-wrapper" pdfMode={pdfMode}>
         <View className="flex" pdfMode={pdfMode}>
           <View className="w-50" pdfMode={pdfMode}>
-            <EditableFileImage
+            {/* <EditableFileImage
               className="logo"
               placeholder="Your Logo"
               value={invoice.logo}
@@ -154,7 +154,7 @@ const InvoicePage: FC<Props> = ({ data, pdfMode, onChange }) => {
               pdfMode={pdfMode}
               onChangeImage={(value) => handleChange('logo', value)}
               onChangeWidth={(value) => handleChange('logoWidth', value)}
-            />
+            /> */}
             <EditableInput
               className="fs-20 bold"
               placeholder="Your Company"
