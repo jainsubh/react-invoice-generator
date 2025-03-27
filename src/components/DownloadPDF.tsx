@@ -4,6 +4,8 @@ import { Invoice, TInvoice } from '../data/types'
 import { useDebounce } from '@uidotdev/usehooks'
 import InvoicePage from './InvoicePage'
 import FileSaver from 'file-saver'
+import Button from '@mui/material/Button';
+import { Box, Grid2 } from '@mui/material'
 
 interface Props {
   data: Invoice
@@ -45,17 +47,8 @@ const Download: FC<Props> = ({ data, setData }) => {
 
   const title = data.invoiceTitle ? data.invoiceTitle.toLowerCase() : 'invoice'
   return (
-    <div className={'download-pdf '}>
-      <PDFDownloadLink
-        key="pdf"
-        document={<InvoicePage pdfMode={true} data={debounced} />}
-        fileName={`${title}.pdf`}
-        aria-label="Save PDF"
-        title="Save PDF"
-        className="download-pdf__pdf"
-      >
-      <p>Print PDF</p>
-      </PDFDownloadLink>
+    <>
+      
 
       {/* 
       <button
@@ -65,7 +58,26 @@ const Download: FC<Props> = ({ data, setData }) => {
         className="download-pdf__template_download mt-40"
       />
       */}
-      <p className="" onClick={handleSaveTemplate}>Save Invoice</p>
+
+      
+        <Grid2 container sx={{p: 0}}>
+          <Grid2 size={{xs: 0, md: 8}}>
+          </Grid2>
+          <Grid2 size={{xs: 12, md: 4}} sx={{textAlign: "right", alignItems: "center"}}>
+            <PDFDownloadLink
+              key="pdf"
+              document={<InvoicePage pdfMode={true} data={debounced} />}
+              fileName={`${title}.pdf`}
+              aria-label="Save PDF"
+              title="Save PDF"
+            >
+              <Button variant="contained" size="small" sx={{my: 2}}>Print PDF</Button>
+            </PDFDownloadLink>
+            <Button variant="contained" size="small" className="" onClick={handleSaveTemplate} sx={{ml: 2, my: 2}}>Save Invoice</Button>
+          </Grid2>
+        </Grid2>
+
+      
 
       {/* 
       <label className="download-pdf__template_upload">
@@ -73,7 +85,7 @@ const Download: FC<Props> = ({ data, setData }) => {
       </label>
       <p className="text-small">Upload Template</p>
       */}
-    </div>
+    </>
   )
 }
 
