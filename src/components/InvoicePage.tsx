@@ -1,12 +1,10 @@
 import { FC, useState, useEffect } from 'react'
-import { Invoice, ProductLine } from '../data/types'
+import { Company, Invoice, ProductLine } from '../data/types'
 import { initialInvoice, initialProductLine } from '../data/initialData'
 import EditableInput from './EditableInput'
-import EditableSelect from './EditableSelect'
 import EditableTextarea from './EditableTextarea'
 import EditableCalendarInput from './EditableCalendarInput'
-//import EditableFileImage from './EditableFileImage'
-import countryList from '../data/countryList'
+//import countryList from '../data/countryList'
 import Document from './Document'
 import Page from './Page'
 import View from './View'
@@ -14,6 +12,7 @@ import Text from './Text'
 import { Font } from '@react-pdf/renderer'
 import Download from './DownloadPDF'
 import { format } from 'date-fns/format'
+import EditableCompany from './EditableCompany'
 
 Font.register({
   family: 'Nunito',
@@ -33,6 +32,9 @@ interface Props {
 }
 
 const InvoicePage: FC<Props> = ({ data, pdfMode, onChange }) => {
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+
   const [invoice, setInvoice] = useState<Invoice>(data ? { ...data } : { ...initialInvoice })
   const [subTotal, setSubTotal] = useState<number>()
   const [saleTax, setSaleTax] = useState<number>()
@@ -48,8 +50,25 @@ const InvoicePage: FC<Props> = ({ data, pdfMode, onChange }) => {
     invoiceDueDate.setDate(invoiceDueDate.getDate() + 30)
   }
 
+  const handleCompanySelect = (company: Company) => {
+    setSelectedCompany(company);
+    console.log(company); 
+    const newInvoice = { ...invoice };
+    newInvoice['company'] = company;
+    setInvoice(newInvoice);
+  };
+
+  const handleNewCompanyAdded = (newOption: Company) => {
+    setCompanies(prev => [...prev, newOption]);
+    setSelectedCompany(newOption);
+    const newInvoice = { ...invoice };
+    newInvoice['company'] = newOption;
+    setInvoice(newInvoice);
+  };
+
+
   const handleChange = (name: keyof Invoice, value: string | number) => {
-    if (name !== 'productLines') {
+    if (name !== 'productLines' && name !== 'company') {
       const newInvoice = { ...invoice }
 
       if (name === 'logoWidth' && typeof value === 'number') {
@@ -111,6 +130,23 @@ const InvoicePage: FC<Props> = ({ data, pdfMode, onChange }) => {
     return amount.toFixed(2)
   }
 
+  const fetchCompany = async () => {
+    console.log('fetch company');
+    try {
+      const response = await fetch('http://inventory.test/api/v1/companies');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const json: Company[] = await response.json();
+      setCompanies(json);
+    } catch (e:any) {
+      //setError(e.message);
+    } finally {
+      console.log('set loading false');
+      //setLoading(false);
+    }
+  };
+
   useEffect(() => {
     let subTotal = 0
 
@@ -135,101 +171,55 @@ const InvoicePage: FC<Props> = ({ data, pdfMode, onChange }) => {
 
   useEffect(() => {
     if (onChange) {
+      fetchCompany();
       onChange(invoice)
     }
   }, [onChange, invoice])
 
   return (
     <>
-    {!pdfMode && <Download data={invoice} setData={(d) => setInvoice(d)} />}
+    
+    {!pdfMode && <Download data={invoice} />}
     <Document pdfMode={pdfMode}>
+    
       <Page className="invoice-wrapper" pdfMode={pdfMode}>
         <View className="flex" pdfMode={pdfMode}>
           <View className="w-50" pdfMode={pdfMode}>
-            {/* <EditableFileImage
-              className="logo"
-              placeholder="Your Logo"
-              value={invoice.logo}
-              width={invoice.logoWidth}
-              pdfMode={pdfMode}
-              onChangeImage={(value) => handleChange('logo', value)}
-              onChangeWidth={(value) => handleChange('logoWidth', value)}
-            /> */}
-            <EditableInput
-              className="fs-20 bold"
-              placeholder="Your Company"
-              value={invoice.companyName}
-              onChange={(value) => handleChange('companyName', value)}
-              pdfMode={pdfMode}
-            />
-            <EditableInput
-              placeholder="Your Name"
-              value={invoice.name}
-              onChange={(value) => handleChange('name', value)}
-              pdfMode={pdfMode}
-            />
-            <EditableInput
-              placeholder="Company's Address"
-              value={invoice.companyAddress}
-              onChange={(value) => handleChange('companyAddress', value)}
-              pdfMode={pdfMode}
-            />
-            <EditableInput
-              placeholder="City, State Zip"
-              value={invoice.companyAddress2}
-              onChange={(value) => handleChange('companyAddress2', value)}
-              pdfMode={pdfMode}
-            />
-            <EditableSelect
-              options={countryList}
-              value={invoice.companyCountry}
-              onChange={(value) => handleChange('companyCountry', value)}
-              pdfMode={pdfMode}
-            />
           </View>
           <View className="w-50" pdfMode={pdfMode}>
-            <EditableInput
-              className="fs-45 right bold"
-              placeholder="Invoice"
-              value={invoice.title}
-              onChange={(value) => handleChange('title', value)}
-              pdfMode={pdfMode}
-            />
+            <Text className="fs-45 right bold" pdfMode={pdfMode}>{invoice.title}</Text>
           </View>
         </View>
 
         <View className="flex mt-40" pdfMode={pdfMode}>
+          {/* Company Selection */}
           <View className="w-55" pdfMode={pdfMode}>
-            <EditableInput
-              className="bold dark mb-5"
-              value={invoice.billTo}
-              onChange={(value) => handleChange('billTo', value)}
-              pdfMode={pdfMode}
-            />
-            <EditableInput
-              placeholder="Your Client's Name"
-              value={invoice.clientName}
-              onChange={(value) => handleChange('clientName', value)}
-              pdfMode={pdfMode}
-            />
-            <EditableInput
-              placeholder="Client's Address"
-              value={invoice.clientAddress}
-              onChange={(value) => handleChange('clientAddress', value)}
-              pdfMode={pdfMode}
-            />
-            <EditableInput
-              placeholder="City, State Zip"
-              value={invoice.clientAddress2}
-              onChange={(value) => handleChange('clientAddress2', value)}
-              pdfMode={pdfMode}
-            />
-            <EditableSelect
-              options={countryList}
-              value={invoice.clientCountry}
-              onChange={(value) => handleChange('clientCountry', value)}
-              pdfMode={pdfMode}
-            />
+            <EditableCompany options={companies} selected={selectedCompany} onSelect={handleCompanySelect} onAdd={handleNewCompanyAdded} pdfMode={pdfMode} />
+            {selectedCompany ? (
+              <>
+                <Text pdfMode={pdfMode}>{selectedCompany.owner_name? selectedCompany.owner_name: 'Owner Name'}</Text>
+                <Text pdfMode={pdfMode}>{selectedCompany.address1? selectedCompany.address1: 'Address 1'}</Text>
+                <Text pdfMode={pdfMode}>{selectedCompany.address2? selectedCompany.address2: 'Address 2'}</Text>
+                <Text pdfMode={pdfMode}>
+                  {selectedCompany.city? selectedCompany.city: 'City, State'}
+                </Text>
+                <Text pdfMode={pdfMode}>
+                  {selectedCompany.country? selectedCompany.country: 'Country, Pin Code'}
+                </Text>
+              </>
+            ):(
+              <>
+                <Text pdfMode={pdfMode}>{invoice.company.owner_name? invoice.company.owner_name: 'Owner Name'}</Text>
+                <Text pdfMode={pdfMode}>{invoice.company.address1? invoice.company.address1: 'Address 1'}</Text>
+                <Text pdfMode={pdfMode}>{invoice.company.address2? invoice.company.address2: 'Address 2'}</Text>
+                <Text pdfMode={pdfMode}>
+                  {invoice.company.city? invoice.company.city: 'City, State'}
+                </Text>
+                <Text pdfMode={pdfMode}>
+                  {invoice.company.country? invoice.company.country: 'Country, Pin Code'}
+                </Text>
+              </>
+            )}
           </View>
           <View className="w-45" pdfMode={pdfMode}>
             <View className="flex mb-5" pdfMode={pdfMode}>
@@ -308,6 +298,14 @@ const InvoicePage: FC<Props> = ({ data, pdfMode, onChange }) => {
               pdfMode={pdfMode}
             />
           </View>
+          <View className="w-12 p-4-8" pdfMode={pdfMode}>
+            <EditableInput
+              className="white bold"
+              value={invoice.productLineCode}
+              onChange={(value) => handleChange('productLineCode', value)}
+              pdfMode={pdfMode}
+            />
+          </View>
           <View className="w-17 p-4-8" pdfMode={pdfMode}>
             <EditableInput
               className="white bold right"
@@ -346,6 +344,14 @@ const InvoicePage: FC<Props> = ({ data, pdfMode, onChange }) => {
                   placeholder="Enter item name/description"
                   value={productLine.description}
                   onChange={(value) => handleProductLineChange(i, 'description', value)}
+                  pdfMode={pdfMode}
+                />
+              </View>
+              <View className="w-12 p-4-8 pb-10" pdfMode={pdfMode}>
+                <EditableInput
+                  className="dark right"
+                  value={productLine.code}
+                  onChange={(value) => handleProductLineChange(i, 'code', value)}
                   pdfMode={pdfMode}
                 />
               </View>

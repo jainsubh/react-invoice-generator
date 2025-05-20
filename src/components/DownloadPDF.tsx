@@ -1,19 +1,22 @@
-import React, { FC } from 'react'
+import { FC, useCallback } from 'react'
 import { PDFDownloadLink } from '@react-pdf/renderer'
-import { Invoice, TInvoice } from '../data/types'
+import { Invoice } from '../data/types'
+//import { Invoice, TInvoice } from '../data/types'
 import { useDebounce } from '@uidotdev/usehooks'
 import InvoicePage from './InvoicePage'
 import FileSaver from 'file-saver'
-import Button from '@mui/material/Button';
+import Button from '@mui/material/Button'
 import { Grid2 } from '@mui/material'
 
 interface Props {
   data: Invoice
-  setData(data: Invoice): void
 }
 
-const Download: FC<Props> = ({ data, setData }) => {
+const Download: FC<Props> = ({ data }) => {
   const debounced = useDebounce(data, 500)
+
+  const document = useCallback(() => <InvoicePage pdfMode={true} data={debounced} />, []);
+
 
   // function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
   //   if (!e.target.files?.length) return
@@ -48,36 +51,32 @@ const Download: FC<Props> = ({ data, setData }) => {
   const title = data.invoiceTitle ? data.invoiceTitle.toLowerCase() : 'invoice'
   return (
     <>
-      
-
-      {/* 
-      <button
-        onClick={handleSaveTemplate}
-        aria-label="Save Template"
-        title="Save Template"
-        className="download-pdf__template_download mt-40"
-      />
-      */}
-
-      
-        <Grid2 container sx={{p: 0}}>
-          <Grid2 size={{xs: 0, md: 8}}>
-          </Grid2>
-          <Grid2 size={{xs: 12, md: 4}} sx={{textAlign: "right", alignItems: "center"}}>
-            <PDFDownloadLink
-              key="pdf"
-              document={<InvoicePage pdfMode={true} data={debounced} />}
-              fileName={`${title}.pdf`}
-              aria-label="Save PDF"
-              title="Save PDF"
-            >
-              <Button variant="contained" size="small" sx={{my: 2}}>Print PDF</Button>
-            </PDFDownloadLink>
-            <Button variant="contained" size="small" className="" onClick={handleSaveTemplate} sx={{ml: 2, my: 2}}>Save Invoice</Button>
-          </Grid2>
+      <Grid2 container sx={{ p: 0 }}>
+        <Grid2 size={{ xs: 0, md: 8 }}></Grid2>
+        <Grid2 size={{ xs: 12, md: 4 }} sx={{ textAlign: 'right', alignItems: 'center' }}>
+          <PDFDownloadLink
+            key="pdf"
+            document={document()}
+            fileName={`${title}.pdf`}
+            aria-label="Save PDF"
+            title="Save PDF"
+          >
+            <Button variant="contained" size="small" sx={{ my: 2 }}>
+              Print PDF
+            </Button>
+          </PDFDownloadLink>
+          
+          <Button
+            variant="contained"
+            size="small"
+            className=""
+            onClick={handleSaveTemplate}
+            sx={{ ml: 2, my: 2 }}
+          >
+            Save Invoice
+          </Button>
         </Grid2>
-
-      
+      </Grid2>
 
       {/* 
       <label className="download-pdf__template_upload">
